@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { parseCampaignBrief } from "@/lib/campaign-rules";
 import {
   Activity, ArrowRight, ArrowUpRight, BadgeCheck, BarChart3, Bell, Check,
   ChevronDown, CircleHelp, Clapperboard, FileText, Filter, Globe2,
@@ -10,7 +11,7 @@ import {
 
 type Campaign = {
   id: number; name: string; platform: string; payout: string;
-  status: "Draft" | "Active"; brief: string; videoUrl: string; created: string;
+  status: "Draft" | "Active"; brief: string; videoUrl: string; created: string; ruleCount: number;
 };
 
 const navItems = [
@@ -53,7 +54,7 @@ export default function Home() {
     setCampaigns(old => [{
       id: Date.now(), name: name.trim(), platform: "YouTube Shorts",
       payout: "Not specified", status: "Draft",
-      brief: brief.trim(), videoUrl: videoUrl.trim(), created: "Just now"
+      brief: brief.trim(), videoUrl: videoUrl.trim(), created: "Just now", ruleCount: parseCampaignBrief(brief).length
     }, ...old]);
     setName(""); setBrief(""); setVideoUrl(""); setModal(false);
     setNotice("Campaign saved in this browser session. Processing is not connected yet.");
@@ -109,7 +110,7 @@ export default function Home() {
           </section>
         </div>
         <section className="panel campaignPanel"><div className="campaignHead"><div><label>YOUR WORKSPACE</label><h2>Campaigns <span>{campaigns.length}</span></h2></div><div className="tableTools"><div className="search"><Search size={14}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search campaigns"/></div><button className="filter" onClick={() => setNotice("Campaign filters will arrive with status tracking.")}><Filter size={14}/> Filter</button></div></div>
-          <div className="tableScroll"><table><thead><tr><th>CAMPAIGN</th><th>PLATFORM</th><th>PAYOUT</th><th>STATUS</th><th>ADDED</th><th/></tr></thead><tbody>{visibleCampaigns.map(c => <tr key={c.id}><td><div className="campaignName"><div className="campaignIcon"><Radio size={15}/></div><div><b>{c.name}</b><small>{c.videoUrl ? "Source video attached" : "No source video yet"}</small></div></div></td><td><span className="platform"><Youtube size={13}/> {c.platform}</span></td><td>{c.payout}</td><td><span className="draft"><i/> Draft</span></td><td>{c.created}</td><td><button className="iconBtn"><MoreHorizontal size={16}/></button></td></tr>)}</tbody></table>{visibleCampaigns.length === 0 && <div className="empty">{campaigns.length ? "No campaigns match your search." : "No campaigns yet. Add your first campaign to get started."}</div>}</div><div className="tableFoot"><span>Showing {visibleCampaigns.length} of {campaigns.length} campaigns</span><span>Prototype data is session-only</span></div>
+          <div className="tableScroll"><table><thead><tr><th>CAMPAIGN</th><th>PLATFORM</th><th>PAYOUT</th><th>STATUS</th><th>ADDED</th><th/></tr></thead><tbody>{visibleCampaigns.map(c => <tr key={c.id}><td><div className="campaignName"><div className="campaignIcon"><Radio size={15}/></div><div><b>{c.name}</b><small>{c.videoUrl ? "Source video attached" : "No source video yet"} · {c.ruleCount} rule checks extracted</small></div></div></td><td><span className="platform"><Youtube size={13}/> {c.platform}</span></td><td>{c.payout}</td><td><span className="draft"><i/> Draft</span></td><td>{c.created}</td><td><button className="iconBtn"><MoreHorizontal size={16}/></button></td></tr>)}</tbody></table>{visibleCampaigns.length === 0 && <div className="empty">{campaigns.length ? "No campaigns match your search." : "No campaigns yet. Add your first campaign to get started."}</div>}</div><div className="tableFoot"><span>Showing {visibleCampaigns.length} of {campaigns.length} campaigns</span><span>Prototype data is session-only</span></div>
         </section>
         <div className="integrations"><Integration icon={<Clapperboard size={17}/>} title="OpenShorts engine" detail="AI clip generation · API / MCP" onClick={() => setNotice("OpenShorts API endpoint and credentials are the first backend integration.")}/><Integration icon={<Globe2 size={17}/>} title="Publishing accounts" detail="YouTube · Instagram · TikTok" onClick={() => setNotice("Publishing will use official APIs or a supported publishing provider.")}/></div>
         <footer><span>CLIP FACTORY <i>·</i> BUILD 0.1.0</span><span>Built for creators who move at scale.</span></footer>
