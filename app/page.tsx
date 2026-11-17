@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity, ArrowRight, ArrowUpRight, BadgeCheck, BarChart3, Bell, Check,
   ChevronDown, CircleHelp, Clapperboard, FileText, Filter, Globe2,
@@ -32,6 +32,16 @@ export default function Home() {
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState("");
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
+  const [runLoading, setRunLoading] = useState(false);
+  const [jobId, setJobId] = useState("");
+
+  useEffect(() => {
+    try { const saved = localStorage.getItem("clipfactory_campaigns"); if (saved) setCampaigns(JSON.parse(saved)); } catch { /* ignore invalid local cache */ }
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("clipfactory_campaigns", JSON.stringify(campaigns)); } catch { /* storage may be unavailable */ }
+  }, [campaigns]);
 
   const visibleCampaigns = useMemo(
     () => campaigns.filter(c => c.name.toLowerCase().includes(search.toLowerCase())),
@@ -92,7 +102,10 @@ export default function Home() {
           <section className="panel quick"><div className="panelHead"><div><label>QUICK START</label><h2>Prepare a clipping run</h2></div><div className="zap"><Zap size={17}/></div></div><p>Choose a campaign and paste its approved YouTube source. The run will be linked to that campaign.</p>
             <label className="fieldLabel">CAMPAIGN</label><select value={selectedCampaign} onChange={e => setSelectedCampaign(e.target.value)}><option value="">Choose a campaign</option>{campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <label className="fieldLabel">YOUTUBE VIDEO URL</label><div className="urlInput"><Youtube size={16}/><input value={quickUrl} onChange={e => setQuickUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..."/></div>
-            <button className="run" onClick={prepareRun}><Play size={14} fill="currentColor"/> Prepare clipping run <ArrowRight size={14}/></button><small className="disclaimer"><LockKeyhole size={12}/> No video is processed in this prototype.</small>
+            <label className="rightsCheck"><input type="checkbox" checked={rightsConfirmed} onChange={e => setRightsConfirmed(e.target.checked)}/> I own this video or have permission to process it.</label>
+            <button className="run" onClick={prepareRun} disabled={runLoading}><Play size={14} fill="currentColor"/> {runLoading ? "Starting job..." : "Start clipping with OpenShorts"} <ArrowRight size={14}/></button>
+            {jobId && <small className="jobId">OpenShorts job: {jobId}</small>}
+            <small className="disclaimer"><LockKeyhole size={12}/> Requires OPENSHORTS_API_KEY in Vercel.</small>
           </section>
         </div>
         <section className="panel campaignPanel"><div className="campaignHead"><div><label>YOUR WORKSPACE</label><h2>Campaigns <span>{campaigns.length}</span></h2></div><div className="tableTools"><div className="search"><Search size={14}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search campaigns"/></div><button className="filter" onClick={() => setNotice("Campaign filters will arrive with status tracking.")}><Filter size={14}/> Filter</button></div></div>
